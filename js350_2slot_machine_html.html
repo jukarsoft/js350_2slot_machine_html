@@ -1,0 +1,289 @@
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* {font-family: arial}
+		.wraper {width: 340px;border:5px ridge silver; border-radius:20px;padding:40px; margin:auto;background-color: silver;}
+		.display, .scores, .controls {width: 280px;margin:auto;text-align: center; box-sizing:border-box;}
+		.reels {width: 75px;height: 90px;border-radius: 5px;border:2px ridge gold;display: inline-block;background-color: white; padding:5px;}
+		.scores {background-color: blue;padding:10px;}
+		.controls {background-color: blue;padding:10px;box-sizing:border-box;}
+		input[type=text] {width: 50px;}
+		label {display:inline-block;width: 60px; color:white;}
+		.paytable {width: 330px;border-radius: 5px;border:2px ridge gold; margin:auto; padding: 5px; background-color: white; text-align: center;}
+
+		.paytable img {
+			width: 25px;
+			margin: 5px;
+			float: left;
+		}
+
+		.paytable span {
+			line-height: 35px;
+		}
+
+		div.columnas {
+			width: 45%;
+			display: inline-block;
+			vertical-align: top;
+		}
+
+		div#wild {
+			width: 25%;
+		}
+
+	</style>
+	<script type="text/javascript"> 
+		const max = 10;
+		const min = 0;
+		var enJuego = 0;
+		var caja = 0;
+		var numAleatorios = new Array();
+		var apuesta = 0;
+		const arrayPremios = [1,2,3,5,10,20,100,300,500, 1000];
+		jugamos=false;
+		var fg; //variable temporal
+		
+		
+
+		window.onload = function () {
+			document.getElementById('spin').addEventListener('click', inicioJugada);
+			document.getElementById('bet').addEventListener('change', restaApuesta);
+		}
+		
+		arrayFrutas = ['img/0.png','img/1.png','img/2.png','img/3.png','img/4.png','img/5.png','img/6.png','img/7.png','img/8.png','img/9.png'];
+		
+		function restaApuesta() {
+			//alert ('restaApuesta')
+			caja=parseInt(document.getElementById('amount').value);
+			apuesta = parseInt(document.getElementById('bet').value);
+			if (caja-apuesta<0 || isNaN(caja)) {
+				jugamos=false;
+				alert('no hay suficiente dinero para cubrir la partida, poner más dinero')
+			}	
+			//debugger;
+		}
+
+		function comprobarCaja() {
+			//alert('comprobarCaja');
+			
+			caja=parseInt(document.getElementById('amount').value);
+			apuesta = parseInt(document.getElementById('bet').value);
+			if (caja-apuesta<0 || isNaN(caja)) {
+				jugamos=false;
+				alert('pon dinero para jugar')
+			} else {
+				if (jugamos==false) {sonidoAmount();};
+				jugamos=true;
+				caja=caja-apuesta;
+				document.getElementById('amount').value = caja;
+			}
+			return jugamos
+		}
+
+		function inicioJugada () {
+			//alert('inicioJugada')
+			
+			//comprobar si hay dinero
+			jugamos=comprobarCaja()
+			//alert ('jugamos?' + jugamos)
+			if (jugamos == true) {
+				//debugger;
+				girar()
+			}
+		}
+		function girar() {
+			var n1,n2,n3;
+			var arrayFiguras = [0,0,0,0,0,0,0,0,0,0];
+			var premio=0
+			n1=Math.floor(Math.random()*10);
+			arrayFiguras [n1]++;
+			n2=Math.floor(Math.random()*10);
+			arrayFiguras [n2]++;
+			n3=Math.floor(Math.random()*10);
+			arrayFiguras [n3]++;
+			mostrarResultado(n1,n2,n3);
+			//debugger
+			for (a=0;a<arrayFiguras.length;a++) {
+				//tres figuras iguales
+				if (arrayFiguras[a]==3) {
+					premio = arrayPremios[a];
+					break;
+				} else {
+					//hay dos figuras iguales y comodin
+					if (arrayFiguras[a]==2 && arrayFiguras[9]==1) {
+						premio = arrayPremios[a];;
+						break;
+					} else {
+						if (arrayFiguras[a]==1 && arrayFiguras[9]==2) {
+							premio = arrayPremios [a];;
+							break;
+						}
+					}
+				}
+			}
+			calcularPremio(premio);
+		}
+				
+		function mostrarResultado (n1,n2,n3) {
+			setTimeout(bucleFrutas(n1,'reel1'),13000);
+			document.getElementById('reel1').src=arrayFrutas[n1];
+			
+			setTimeout(bucleFrutas(n2,'reel2'),13000);
+			document.getElementById('reel2').src=arrayFrutas[n2];
+			
+			setTimeout(bucleFrutas(n3,'reel3'),13000);
+			document.getElementById('reel3').src=arrayFrutas[n3];
+		}
+
+		function bucleFrutas(fx,elem) {
+			for (i=fx;i<=arrayFrutas.length-1;i++){
+				fg=Math.floor(Math.random()*10);
+				document.getElementById(elem).src=arrayFrutas[fg];
+				
+			}
+			
+		}
+		function fsinNada(fg,elem) {
+			
+		}
+
+		function calcularPremio(premio) {
+			
+			if (premio!=0) {
+				document.getElementById('spin').removeEventListener('click', inicioJugada);
+				//alert(premio)
+				//debugger
+				apuesta = parseInt(document.getElementById('bet').value);
+				gana=premio*apuesta;
+				document.getElementById('win').value=gana;
+				document.getElementById('win').style.backgroundColor='yellow';
+				sonidoPremio();
+				caja=parseInt(document.getElementById('amount').value);
+				
+				setTimeout(resaltar,10000);
+				
+				
+			} 
+			
+		}
+
+		function sonidoPremio() {
+			//alert('sonidoPremio')
+			// creamos el objeto audio
+			var audioElement = document.createElement('audio');
+ 
+			// indicamos el archivo de audio a cargar
+			audioElement.setAttribute('src', 'audio/sonido_tragaperras.mp3');
+ 
+			// Si deseamos que una vez cargado empieze a sonar...
+			audioElement.setAttribute('autoplay', 'autoplay');
+ 			
+			// Si deseamos que inicie siempre desde el principio
+			//audioElement.currentTime = 0;
+ 
+			// iniciamos el audio
+			audioElement.play();
+		}
+
+		function resaltar() {
+			document.getElementById('amount').value=caja+gana;
+			document.getElementById('win').value=0;
+			document.getElementById('win').style.backgroundColor='white';
+			document.getElementById('spin').addEventListener('click', inicioJugada);
+
+		}
+		
+		function sonidoAmount() {
+			//alert('sonidoPremio')
+			// creamos el objeto audio
+			var audioElement = document.createElement('audio');
+ 
+			// indicamos el archivo de audio a cargar
+			audioElement.setAttribute('src', 'audio/008899506_prev.mp3');
+ 
+			// Si deseamos que una vez cargado empieze a sonar...
+			audioElement.setAttribute('autoplay', 'autoplay');
+ 			
+			// Si deseamos que inicie siempre desde el principio
+			//audioElement.currentTime = 0;
+ 
+			// iniciamos el audio
+			audioElement.play();
+		}
+	</script>
+</head>
+<body>
+	<div class='wraper'>
+		<!-- Esto es un comentario html-->
+		<section class='scores'>
+			<label>Amount</label>
+			<input type='text' id='amount'>
+			<label>Wins</label>
+			<input type='text' disabled id='win'>
+		</section><br><br>
+		<section class='display'>
+			<div class='reels'><img id='reel1' src='img/7.png'></div>
+			<div class='reels'><img id='reel2' src='img/7.png'></div>
+			<div class='reels'><img id='reel3' src='img/7.png'></div>
+		</section><br><br>
+		<section class='controls'>
+			<form>
+				<label>Bet</label>
+				<select id='bet' >
+					<option value='1'>1c</option>
+					<option value='10'>10c</option>
+					<option value='20'>20c</option>
+					<option value='40'>40c</option>
+					<option value='60'>60c</option>
+					<option value='100'>100c</option>
+					<option value='200'>200c</option>
+					<option value='500'>500c</option>
+				</select>
+				<input type='button' value='SPIN REELS' id='spin'>
+			</form>
+		</section><br>
+		<section class='paytable'>
+			<div class='columnas'>
+				<div style='clear:left'>
+					<img src="img/9.png"><img src="img/9.png"><img src="img/9.png"><span>&nbsp1000</span>
+				</div>
+				<div  style='clear:left'>
+					<img src="img/8.png"><img src="img/8.png"><img src="img/8.png"><span>&nbsp500</span>
+				</div>
+				<div style='clear:left'>
+					<img src="img/7.png"><img src="img/7.png"><img src="img/7.png"><span>&nbsp300</span>
+				</div>
+				<div style='clear:left'>
+					<img src="img/6.png"><img src="img/6.png"><img src="img/6.png"><span>&nbsp100</span>
+				</div>
+				<div style='clear:left'>
+					<img src="img/5.png"><img src="img/5.png"><img src="img/5.png"><span>&nbsp20</span>
+				</div>
+			</div>
+			<div class='columnas'>
+				<div>
+					<img src="img/4.png"><img src="img/4.png"><img src="img/4.png"><span>&nbsp10</span>
+				</div>
+				<div style='clear:left'>
+					<img src="img/3.png"><img src="img/3.png"><img src="img/3.png"><span>&nbsp5</span>
+				</div>
+				<div style='clear:left'>
+					<img src="img/2.png"><img src="img/2.png"><img src="img/2.png"><span>&nbsp3</span>
+				</div>
+				<div style='clear:left'>
+					<img src="img/1.png"><img src="img/1.png"><img src="img/1.png"><span>&nbsp2</span>
+				</div>
+				<div style='clear:left'>
+					<img src="img/0.png"><img src="img/0.png"><img src="img/0.png"><span>&nbsp1</span>
+				</div>
+			</div>
+			<div class='columnas' id='wild'>
+				<div>
+					<img src="img/9.png"><span>WILD</span>
+				</div>
+			</div>
+		</section><br><br>
+	</div>
+</body>
+</html>
